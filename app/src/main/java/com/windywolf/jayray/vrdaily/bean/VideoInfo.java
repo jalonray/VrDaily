@@ -17,4 +17,7 @@ public class VideoInfo {
     public String videoUrl;
     @VR_TYPE
     public int vrType = MONO;
+    public String imgUrl;
+    public String title;
+    public String duration;
 }

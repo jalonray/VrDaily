@@ -36,4 +36,6 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     // Retrofit http://square.github.io/retrofit/
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    // Glide download, cache images and set to view
+    compile 'com.github.bumptech.glide:glide:3.7.0'
 }
