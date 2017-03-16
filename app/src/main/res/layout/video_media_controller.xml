@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:background="#7F000000"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/playPauseBtn"
+        android:background="@null"
+        android:paddingLeft="10dp"
+        android:src="@mipmap/video_control_play"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/btnReplay"
+        android:background="@null"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:src="@mipmap/video_replay_small"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/time_current"
+        android:textSize="11sp"
+        android:textColor="@color/text_white"
+        tools:text="01:30"
+        android:text="00:00:00"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <SeekBar
+        android:id="@+id/controller_progress"
+        android:layout_width="0dip"
+        android:layout_weight="20"
+        android:layout_height="30dp"
+        android:layout_gravity="center_vertical"
+        tools:progress="10"
+        tools:secondaryProgress="30" />
+
+    <TextView
+        android:id="@+id/time_total"
+        android:textSize="11sp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="03:00:00"
+        android:text="00:00:00"
+        android:textColor="@color/text_white" />
+
+    <ImageButton
+        android:id="@+id/maxBtn"
+        android:background="@null"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:src="@mipmap/video_control_max"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/volumeControl"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@null"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:src="@mipmap/volume_on"/>
+
+</LinearLayout>
