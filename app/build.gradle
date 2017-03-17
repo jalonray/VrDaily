@@ -26,9 +26,11 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
-    debugCompile 'com.facebook.stetho:stetho:1.4.2'
     testCompile 'junit:junit:4.12'
 
+    // Use chrome://inspect/#devices to inspect information of app
+    debugCompile 'com.facebook.stetho:stetho:1.4.2'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
     // Google VR video view
     compile 'com.google.vr:sdk-videowidget:1.30.0'
     // Field and method binding -- ButterKnife
@@ -36,6 +38,10 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     // Retrofit http://square.github.io/retrofit/
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     // Glide download, cache images and set to view
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    // rxJava
+    compile 'io.reactivex.rxjava2:rxjava:2.0.7'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 }

@@ -1,5 +1,8 @@
 package com.windywolf.jayray.vrdaily.api;
 
+import com.windywolf.jayray.vrdaily.bean.VideoInfo;
+
+import io.reactivex.Flowable;
 import retrofit2.http.GET;
 
 /**
@@ -12,6 +15,6 @@ public interface VideoService {
 
     static final String BASE_VR_URL = "http://api.utovr.com/";
     @GET("v4/home")
-    int getInfo();
+    Flowable<VideoInfo> getInfo();
 
 }

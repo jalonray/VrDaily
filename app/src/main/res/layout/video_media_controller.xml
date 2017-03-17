@@ -37,7 +37,7 @@
         android:layout_height="wrap_content" />
 
     <SeekBar
-        android:id="@+id/controller_progress"
+        android:id="@+id/seek_bar"
         android:layout_width="0dip"
         android:layout_weight="20"
         android:layout_height="30dp"

@@ -20,4 +20,12 @@ public class VideoInfo {
     public String imgUrl;
     public String title;
     public String duration;
+    public String subtitle;
+    public String description;
+    public String thumbnail;
+    public String tag;
+    public String scale;
+    public int bindType;
+    public String bindValue;
+
 }

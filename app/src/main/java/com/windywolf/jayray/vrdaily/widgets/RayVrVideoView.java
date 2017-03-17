@@ -31,7 +31,11 @@ import butterknife.ButterKnife;
 
 import static com.google.vr.sdk.widgets.common.VrWidgetView.DisplayMode.EMBEDDED;
 import static com.google.vr.sdk.widgets.common.VrWidgetView.DisplayMode.FULLSCREEN_MONO;
+import static com.google.vr.sdk.widgets.common.VrWidgetView.DisplayMode.FULLSCREEN_STEREO;
 import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.COMPLETE;
+import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.ERROR;
+import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.IDLE;
+import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.LOAD;
 import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.PAUSE;
 import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VideoStatus.PLAY;
 import static com.windywolf.jayray.vrdaily.widgets.RayVrVideoView.VrHandler.FADE_OUT;
@@ -77,11 +81,11 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
     ImageButton mReplay;
     @BindView(R.id.time_current)
     TextView mCurrentTime;
-//    @BindView(R.id.seek_bar)
-//    SeekBar mPlayProgress;
+    @BindView(R.id.seek_bar)
+    SeekBar mPlayProgress;
     @BindView(R.id.time_total)
     TextView mTotalTime;
-    @BindView(R.id.fullscreen_button)
+    @BindView(R.id.maxBtn)
     ImageButton mFullscreen;
     @BindView(R.id.volumeControl)
     ImageButton mVolumeControl;
@@ -92,6 +96,7 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
     protected int mVideoStatus;
     protected VrHandler mHandler;
     protected boolean isFullscreen = false;
+    protected boolean isInBack = false;
 
     public RayVrVideoView(@NonNull Context context) {
         super(context);
@@ -123,14 +128,14 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         mReplay.setOnClickListener(this);
         mFullscreen.setOnClickListener(this);
         mVolumeControl.setOnClickListener(this);
-//        mPlayProgress.setOnSeekBarChangeListener(this);
+        mPlayProgress.setOnSeekBarChangeListener(this);
     }
 
     private void initPlayer() {
         printLog();
         ydVrVideoEventListener = new YdVrVideoEventListener();
         mVideoView.setEventListener(ydVrVideoEventListener);
-        mVideoStatus = VideoStatus.IDLE;
+        mVideoStatus = IDLE;
         mVideoView.setInfoButtonEnabled(false);
         mVideoView.setTransitionViewEnabled(false);
         mVideoView.setFullscreenButtonEnabled(false);
@@ -145,9 +150,9 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
             VrVideoView.Options options = new VrVideoView.Options();
             options.inputType = info.vrType;
             mVideoView.loadVideo(Uri.parse(info.videoUrl), options);
-            mVideoStatus = VideoStatus.LOAD;
+            mVideoStatus = LOAD;
         } catch (IOException e) {
-            mVideoStatus = VideoStatus.ERROR;
+            mVideoStatus = ERROR;
             Log.e(TAG, "Could not load video: " + e);
         }
 
@@ -157,26 +162,30 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         printLog();
         mVideoView.pauseRendering();
         if (mVideoStatus == PLAY) {
-            mVideoStatus = PAUSE;
+            doPause();
         }
+        isInBack = true;
     }
 
     public void onResume() {
         printLog();
         mVideoView.resumeRendering();
         if (mVideoStatus == PAUSE) {
-            mVideoStatus = PLAY;
+            doPlay();
         }
+        isInBack = false;
     }
 
     public void onDestroy() {
         printLog();
         mVideoView.shutdown();
-        mVideoStatus = VideoStatus.IDLE;
+        mVideoStatus = IDLE;
+        VideoManager.getInstance().release();
     }
 
     @Override
     public void onClick(View v) {
+        showController(defaultTimeout);
         switch (v.getId()) {
             case R.id.playPauseBtn:
                 playPause();
@@ -216,20 +225,43 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
     public void replay() {
         if (isVideoLoaded()) {
             mVideoView.seekTo(0);
-            mVideoView.playVideo();
             updateStatusText();
-            mVideoStatus = PLAY;
+            doPlay();
         }
     }
 
     public void playPause() {
         if (mVideoStatus == PLAY) {
-            mVideoStatus = PAUSE;
-            mVideoView.pauseVideo();
+            doPause();
         } else if (mVideoStatus == PAUSE) {
-            mVideoStatus = PAUSE;
-            mVideoView.playVideo();
+            doPlay();
         }
+    }
+
+    public void doPlay() {
+        if (mVideoStatus == IDLE || mVideoStatus == ERROR || mVideoStatus == PLAY) {
+            return;
+        }
+        mVideoStatus = PLAY;
+        mPlayPause.setImageResource(R.mipmap.video_control_pause);
+        mVideoView.playVideo();
+    }
+
+    public void doPause() {
+        if (mVideoStatus == IDLE || mVideoStatus == ERROR || mVideoStatus == PAUSE) {
+            return;
+        }
+        mVideoStatus = PAUSE;
+        mPlayPause.setImageResource(R.mipmap.video_control_play);
+        mVideoView.pauseVideo();
+    }
+
+    public void toLandscape() {
+        mVideoView.setDisplayMode(FULLSCREEN_MONO);
+    }
+
+    public void toPortrait() {
+        mVideoView.setDisplayMode(EMBEDDED);
     }
 
     protected boolean isVideoLoaded() {
@@ -240,7 +272,11 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
     protected void toggleFullscreen() {
         printLog();
         isFullscreen = !isFullscreen;
-        mVideoView.setDisplayMode(isFullscreen ? FULLSCREEN_MONO : EMBEDDED);
+        if (isFullscreen) {
+            toLandscape();
+        } else {
+            toPortrait();
+        }
     }
 
     protected void toggleController() {
@@ -250,6 +286,7 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         } else {
             doFadeIn(mController);
         }
+        isControllerShowed = !isControllerShowed;
     }
 
     protected void toggleVolume() {
@@ -285,7 +322,7 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         mHandler.removeMessages(FADE_OUT);
         mController.setVisibility(VISIBLE);
         if (timeout != 0) {
-            mHandler.sendEmptyMessage(FADE_OUT);
+            mHandler.sendEmptyMessageDelayed(FADE_OUT, timeout);
         }
     }
 
@@ -327,10 +364,14 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         @Override
         public void onLoadSuccess() {
             Log.i(TAG, "Successfully loaded video " + mVideoView.getDuration());
-            mVideoStatus = PLAY;
-//            mPlayProgress.setMax((int) mVideoView.getDuration());
+            mPlayProgress.setMax((int) mVideoView.getDuration());
             mTotalTime.setText(getReadTime(mVideoView.getDuration()));
             showController(defaultTimeout);
+            if (isInBack) {
+                doPause();
+            } else {
+                doPlay();
+            }
         }
 
         /**
@@ -339,13 +380,17 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         @Override
         public void onLoadError(String errorMessage) {
             // An error here is normally due to being unable to decode the video format.
-            mVideoStatus = VideoStatus.ERROR;
+            mVideoStatus = ERROR;
             Log.e(TAG, "Error loading video: " + errorMessage);
         }
 
         @Override
         public void onClick() {
-            toggleController();
+            if (isFullscreen) {
+                playPause();
+            } else {
+                toggleController();
+            }
         }
 
         /**
@@ -354,7 +399,7 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         @Override
         public void onNewFrame() {
             updateStatusText();
-//            mPlayProgress.setProgress((int) mVideoView.getCurrentPosition());
+            mPlayProgress.setProgress((int) mVideoView.getCurrentPosition());
         }
 
         /**
@@ -364,6 +409,11 @@ public class RayVrVideoView extends FrameLayout implements DataBinding<VideoInfo
         public void onCompletion() {
             mVideoView.pauseVideo();
             mVideoStatus = COMPLETE;
+        }
+
+        @Override
+        public void onDisplayModeChanged(int newDisplayMode) {
+            isFullscreen = newDisplayMode == FULLSCREEN_MONO || newDisplayMode == FULLSCREEN_STEREO;
         }
     }
 }
